@@ -102,6 +102,7 @@ Number::Number(string type, string content)
           else if (content[i] == 'Q') m_content += ("010000");     
           else if (content[i] == 'h') m_content += ("100001");   
           else if (content[i] == 'y') m_content += ("110010");
+          else if (content[i] == '=') m_size -= 6;
         }
     }
   else if (type == "char")
@@ -115,6 +116,13 @@ Number::Number(string type, string content)
         }
     }
 
+
+
+}
+
+Number::Number()
+{
+  m_size = 0;
 }
 
 
@@ -313,67 +321,58 @@ string Number::GetB64()
 }
 
 
-void Number::Xor(Number A)
+int Number::GetSize()
 {
-  string newcontent = "";
-  if (m_size < A.m_size)
-    return;
-  if (m_size == A.m_size)
-    {
-      for (unsigned int i = 0 ; i < m_size; i++)
-        {
-          if (m_content[i] == A.m_content[i])
-            newcontent += "0";
-          else
-            newcontent += "1";
-        }
-    }
-  else
-    {
-      int iterator = 0;
-      for (unsigned int i=0; i < m_size; i++)
-        {
-          if (m_content[i] == A.m_content[iterator])
-            newcontent += "0";
-          else
-            newcontent += "1";
-          iterator++;
-          if (iterator >= A.m_size)
-            iterator=0;
-        }
-    }
-  m_content = newcontent;
+  return m_size;
 }
 
 
-int Number::HammerDist(Number A)
+vector<Number> Number::GetSubNumber(int n,int bitsize)
 {
-  int dist=0;
-  if (m_size != A.m_size)
-    return 0;
-  for (unsigned int i = 0 ; i < m_size; i++)
+  vector<Number> output;
+  if (m_size == 0)
+    return output;
+  vector<string> strings;
+  for (unsigned int i = 0; i < n; i++)
+    strings.push_back("");
+
+  int j = 0;
+  for ( unsigned int i = 0; i * bitsize < m_size; i++)
     {
-      if (m_content[i] != A.m_content[i])
-        dist++;
+      strings[j] += m_content.substr(i* bitsize, bitsize);
+      j++;
+      if (j ==n)
+        j = 0;
     }
-  return dist;
+  for (unsigned int i = 0; i < n; i++)
+    output.push_back(Number("bin", strings[i]));
+
+  return output;
 }
 
 
-vector<int> Number::FindKeysize()
+
+
+bool TestSubNumber(Number A)
 {
-  vector<int> distances;
-  int max_size = 40;
-  for (unsigned int i = 0; i < max_size ; i++)
+  int n = 5;
+  vector<Number> test = A.GetSubNumber(n);
+  vector<string> strings;
+  vector<int> iterators;
+
+  string test_s = "";
+
+  for (unsigned int i = 0; i < A.GetSize(); i++)
     {
-      string extract1 = m_content.substr(0, i);
-      string extract2 = m_content.substr(i, i);
-      Number
-        test1 ("bin", extract1),
-        test2 ("bin", extract2);
-      int dist = test1.HammerDist(test2);
-      distances.push_back(dist);
+      for (unsigned int j = 0 ; j < 5 ; j++)
+        {
+          if (iterators[j] < strings[j].size())
+            {
+              test_s+=strings[j][iterators[j]];
+              iterators[j]++;
+            }
+        }
     }
-  for(unsigned int i = 0 ; i < distances.size() ; i++)
-    cout << "lol " << distances[i] <<endl;
+  
+  return (test_s == A.GetBin());
 }
